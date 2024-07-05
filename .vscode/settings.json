@@ -1,0 +1,5 @@
+{
+  "solidity.telemetry": true,
+  "solidity.formatter": "forge",
+  "editor.defaultFormatter": "NomicFoundation.hardhat-solidity"
+}
