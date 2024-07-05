@@ -10,9 +10,20 @@ contract FundMeTest is Test {
     FundMe fundMe;
     DeployFundMe deployFundMe;
 
+    address immutable USER = makeAddr("user");
+    uint256 constant SEND_VALUE = 0.1 ether;
+    uint256 constant INITIAL_BALANCE = 1 ether;
+
+    modifier funded() {
+        vm.prank(USER);
+        fundMe.fund{value: SEND_VALUE}();
+        _;
+    }
+
     function setUp() external {
         deployFundMe = new DeployFundMe();
         fundMe = deployFundMe.run();
+        vm.deal(USER, INITIAL_BALANCE);
     }
 
     function testMinimalDollarIsFive() public view {
@@ -28,5 +39,25 @@ contract FundMeTest is Test {
     function testPriceFeedVersionIsAccurate() public view {
         uint256 version = fundMe.getVersion();
         assertEq(version, 4);
+    }
+
+    function testFundFailsWithoutEnoughEther() public {
+        vm.expectRevert("You need to spend more ETH!");
+        fundMe.fund();
+    }
+
+    function testFundUpdatesTheFunders() public funded {
+        assertEq(fundMe.getAddressToAmountFunded(USER), SEND_VALUE);
+    }
+
+    function testFundAddsFunderToRegisteredFunders() public funded {
+        address funder = fundMe.getFunder(0);
+        assertEq(funder, USER);
+    }
+
+    function testOnlyOwnerCanWithdraw() public funded {
+        vm.prank(USER);
+        vm.expectRevert();
+        fundMe.withdraw();
     }
 }
