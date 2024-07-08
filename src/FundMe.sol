@@ -26,7 +26,16 @@ contract FundMe {
         require(msg.value.getConversionRate(s_priceFeed) >= MINIMUM_USD, "You need to spend more ETH!");
         // require(PriceConverter.getConversionRate(msg.value) >= MINIMUM_USD, "You need to spend more ETH!");
         s_addressToAmountFunded[msg.sender] += msg.value;
-        s_funders.push(msg.sender);
+        bool isFunder = false;
+        for (uint256 i = 0; i < s_funders.length; i++) {
+            if (s_funders[i] == msg.sender) {
+                isFunder = true;
+                break;
+            }
+        }
+        if (!isFunder) {
+            s_funders.push(msg.sender);
+        }
     }
 
     function getVersion() public view returns (uint256) {
@@ -85,6 +94,14 @@ contract FundMe {
 
     function getFunder(uint256 index) external view returns (address) {
         return s_funders[index];
+    }
+
+    function getFunders() external view onlyOwner returns (address[] memory) {
+        return s_funders;
+    }
+
+    function getNumberOfFunders() external view onlyOwner returns (uint256) {
+        return s_funders.length;
     }
 
     function getOwner() external view returns (address) {

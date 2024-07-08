@@ -3,8 +3,8 @@
 pragma solidity ^0.8.18;
 
 import {Test, console} from "forge-std/Test.sol";
-import {FundMe} from "../src/FundMe.sol";
-import {DeployFundMe} from "../script/DeployFundMe.s.sol";
+import {FundMe} from "../../src/FundMe.sol";
+import {DeployFundMe} from "../../script/DeployFundMe.s.sol";
 
 contract FundMeTest is Test {
     FundMe fundMe;
@@ -53,6 +53,21 @@ contract FundMeTest is Test {
     function testFundAddsFunderToRegisteredFunders() public funded {
         address funder = fundMe.getFunder(0);
         assertEq(funder, USER);
+    }
+
+    function testThereAreNoDuplicateFunders() public funded {
+        vm.prank(USER);
+        fundMe.fund{value: SEND_VALUE}();
+        vm.startPrank(fundMe.getOwner());
+        uint256 numberOfFunders = fundMe.getNumberOfFunders();
+        address[] memory funders = fundMe.getFunders();
+        vm.stopPrank();
+        console.log("--------- funders (start) ---------");
+        for (uint256 i = 0; i < funders.length; i++) {
+            console.log(funders[i]);
+        }
+        console.log("--------- funders (end) ---------");
+        assertEq(numberOfFunders, 1);
     }
 
     function testOnlyOwnerCanWithdraw() public funded {
