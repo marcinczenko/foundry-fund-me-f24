@@ -16,3 +16,6 @@ docs/
 
 # password file
 .password
+
+# macOS
+.DS_Store
